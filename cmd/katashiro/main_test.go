@@ -12,7 +12,9 @@ import (
 
 	_ "modernc.org/sqlite"
 
+	"github.com/withnic/katashiro/internal/engine"
 	"github.com/withnic/katashiro/internal/model"
+	"github.com/withnic/katashiro/internal/state"
 )
 
 func katashiro(t *testing.T, args ...string) (code int, stdout, stderr string) {
@@ -65,11 +67,21 @@ func TestNextAdvancesCursorAndReset(t *testing.T) {
 }
 
 func TestNextExhaustedExitCode2(t *testing.T) {
-	t.Setenv("KATASHIRO_STATE_DIR", t.TempDir())
-	if code, _, e := katashiro(t, "next", "999999", "--format=jsonl"); code != 0 {
-		t.Fatalf("code=%d %s", code, e)
+	dir := t.TempDir()
+	t.Setenv("KATASHIRO_STATE_DIR", dir)
+	// 999,999 件分の出力を作るとメモリを大量に使う（-race では数倍）ため、カーソルだけを進める
+	if _, err := state.NewFileStore(dir).Reserve(state.DefaultProfile, engine.SpaceSize-1, false); err != nil {
+		t.Fatal(err)
 	}
-	code, out, errOut := katashiro(t, "next", "2")
+	// 100 万件目までは払い出せる
+	if code, out, e := katashiro(t, "next", "1"); code != 0 || len(decode(t, out)) != 1 {
+		t.Fatalf("the 1,000,000th persona must be issued: code=%d %s", code, e)
+	}
+	code, out, errOut := katashiro(t, "next", "1")
+	if code != 2 || out != "" || !strings.Contains(errOut, "exhausted") {
+		t.Fatalf("code=%d stdout=%q stderr=%q", code, out, errOut)
+	}
+	code, out, errOut = katashiro(t, "next", "2")
 	if code != 2 || out != "" || !strings.Contains(errOut, "exhausted") {
 		t.Fatalf("code=%d stdout=%q stderr=%q", code, out, errOut)
 	}
