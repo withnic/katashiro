@@ -82,7 +82,7 @@ func NewSQLite(path string, cols []*model.Column, force bool) (Writer, error) {
 		strings.Join(names, ", "), strings.TrimSuffix(strings.Repeat("?, ", len(cols)), ", "))
 	stmt, err := tx.Prepare(q)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback() // 元のエラーを返す
 		return fail(err)
 	}
 	return &sqliteWriter{db: db, tx: tx, stmt: stmt, cols: cols, args: make([]any, len(cols))}, nil
@@ -116,7 +116,7 @@ func (s *sqliteWriter) Close() error {
 	if err == nil {
 		err = s.tx.Commit()
 	} else {
-		s.tx.Rollback()
+		_ = s.tx.Rollback() // stmt.Close のエラーを返す
 	}
 	if cerr := s.db.Close(); err == nil {
 		err = cerr

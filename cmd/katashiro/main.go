@@ -213,7 +213,7 @@ func parseCount(pos []string, cmd string) (int, error) {
 	}
 	n, err := strconv.Atoi(pos[0])
 	if err != nil || n < 1 || n > engine.SpaceSize {
-		return 0, fmt.Errorf("N must be an integer in 1..%d: %q", engine.SpaceSize, pos[0])
+		return 0, fmt.Errorf("<N> must be an integer in 1..%d: %q", engine.SpaceSize, pos[0])
 	}
 	return n, nil
 }

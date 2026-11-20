@@ -1,0 +1,30 @@
+# golangci-lint v2 の設定。バージョンは Makefile と CI で固定している。
+version: "2"
+
+linters:
+  # standard: errcheck, govet, ineffassign, staticcheck, unused
+  default: standard
+  enable:
+    - bodyclose     # HTTP レスポンスの Body の閉じ忘れ
+    - errorlint     # errors.Is / As を使わないエラー比較
+    - gocritic      # よくある書き間違い
+    - misspell      # 英単語のスペルミス
+    - nolintlint    # 不要・理由なしの //nolint
+    - unconvert     # 不要な型変換
+    - usestdlibvars # http.MethodPost などの標準定数
+  settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+  exclusions:
+    presets:
+      - std-error-handling # fmt.Fprint* や Close など、戻り値を捨てて問題ない標準関数
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/withnic/katashiro

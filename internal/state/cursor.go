@@ -118,7 +118,7 @@ func (s *FileStore) withLock(profile string, fn func(cur uint64) (uint64, error)
 	if err := lk.Lock(); err != nil {
 		return fmt.Errorf("lock: %w", err)
 	}
-	defer lk.Unlock()
+	defer func() { _ = lk.Unlock() }() // ロックファイルはプロセス終了時にも解放される
 
 	var cf cursorFile
 	b, err := os.ReadFile(s.path(profile))

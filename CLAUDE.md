@@ -41,13 +41,16 @@ docs/                     # v2 仕様書
 
 ```
 # マスタバイナリ生成（オフラインシード生成対応）
-go generate ./...
+go generate ./...        # make generate
 
 # テスト実行
-go test ./...
+go test ./...            # make test
+
+# lint（golangci-lint。バージョンは Makefile で固定）
+make lint
 
 # バイナリビルド（CGO無効）
-CGO_ENABLED=0 go build -ldflags="-w -s" -o katashiro ./cmd/katashiro
+CGO_ENABLED=0 go build -ldflags="-w -s" -o katashiro ./cmd/katashiro   # make build
 ```
 
 # **厳守すべき設計ルール（Non-Negotiables）**
@@ -76,7 +79,7 @@ CGO_ENABLED=0 go build -ldflags="-w -s" -o katashiro ./cmd/katashiro
 
 # **テスト・実装時の行動指針**
 
-* 変更後は必ず `go test ./...` を実行し、全テストが通ることを確認する。  
+* 変更後は必ず `go test ./...` と `make lint` を実行し、全テスト・lint が通ることを確認する。  
 * Feistel 置換の100万件全単射テスト（`0..999,999` の衝突ゼロ検証）および境界値テスト（17歳・18歳・20歳・`contact.prefecture=福岡県`・並行リクエスト重複ゼロ）を壊さないこと。  
 * テスト実行ログは失敗時のみ詳細を確認し、冗長な出力を抑える。
 

@@ -127,7 +127,9 @@ func TestSQLiteExport(t *testing.T) {
 	}
 	defer db.Close()
 	var n, distinctEmail, distinctCard int
-	db.QueryRow("SELECT COUNT(*), COUNT(DISTINCT contact_email), COUNT(DISTINCT finance_card_number) FROM personas").Scan(&n, &distinctEmail, &distinctCard)
+	if err := db.QueryRow("SELECT COUNT(*), COUNT(DISTINCT contact_email), COUNT(DISTINCT finance_card_number) FROM personas").Scan(&n, &distinctEmail, &distinctCard); err != nil {
+		t.Fatal(err)
+	}
 	if n != 1500 || distinctEmail != 1500 || distinctCard != 1500 {
 		t.Fatalf("n=%d email=%d card=%d", n, distinctEmail, distinctCard)
 	}
@@ -139,7 +141,9 @@ func TestSQLiteExport(t *testing.T) {
 	types := map[string]string{}
 	for rows.Next() {
 		var name, typ string
-		rows.Scan(&name, &typ)
+		if err := rows.Scan(&name, &typ); err != nil {
+			t.Fatal(err)
+		}
 		names = append(names, name)
 		types[name] = typ
 	}
@@ -172,7 +176,9 @@ func TestSQLiteNullLicense(t *testing.T) {
 	db, _ := sql.Open("sqlite", path)
 	defer db.Close()
 	var nulls int
-	db.QueryRow("SELECT COUNT(*) FROM personas WHERE kyc_drivers_license_number IS NULL").Scan(&nulls)
+	if err := db.QueryRow("SELECT COUNT(*) FROM personas WHERE kyc_drivers_license_number IS NULL").Scan(&nulls); err != nil {
+		t.Fatal(err)
+	}
 	if nulls != 10 {
 		t.Fatalf("nulls=%d", nulls)
 	}

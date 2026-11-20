@@ -397,7 +397,7 @@ var phonePrefixes = [3]string{"090", "080", "070"}
 func (g *Generator) phone(seqID uint32) string {
 	const mod = 10_000_000
 	const mul = 3_141_593 // 10 と互いに素 → mod 10^7 で全単射
-	add := uint64(engine.SplitMix64(uint64(g.opt.Seed)^engine.SaltPhone) % mod)
+	add := engine.SplitMix64(uint64(g.opt.Seed)^engine.SaltPhone) % mod
 	low := fmt.Sprintf("%07d", (uint64(seqID)*mul+add)%mod)
 	lead := "0" // 総務省未割り当ての安全帯域
 	if g.opt.StrictPhone {

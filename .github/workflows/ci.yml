@@ -16,11 +16,8 @@ jobs:
       - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version-file: go.mod
-      - name: gofmt
-        run: |
-          unformatted=$(gofmt -l .)
-          if [ -n "$unformatted" ]; then echo "$unformatted"; exit 1; fi
-      - run: go vet ./...
+      - name: lint (golangci-lint, version pinned in Makefile)
+        run: make lint
       - run: go test -race ./...
       - name: genmaster seed mode works offline
         run: go run -tags katashiro_genmaster ./cmd/genmaster -out "$RUNNER_TEMP/master"
@@ -53,7 +50,8 @@ jobs:
       - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version-file: go.mod
-      - run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+      - name: govulncheck (version pinned in Makefile)
+        run: make vuln
 
   docker:
     # ランナー標準の docker（BuildKit）でビルドする。追加の Action を使わないので SHA 固定の対象も増えない。
