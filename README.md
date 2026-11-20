@@ -12,13 +12,20 @@ Go 製シングルバイナリツール（CLI + HTTP API サーバー）です�
 
 ## Installation
 
-[GitHub Releases](../../releases) から OS / アーキテクチャ別のビルド済みバイナリ（linux / darwin / windows × amd64 / arm64）を取得できます。
-ソースからビルドする場合は次のとおりです。
+**ビルド済みバイナリ**: [GitHub Releases](https://github.com/withnic/katashiro/releases) から OS / アーキテクチャ別のアーカイブ（linux / darwin / windows × amd64 / arm64）をダウンロードし、中の `katashiro` を PATH の通った場所に置きます。
+
+**Go でインストール**（Go 1.27.4 以上）:
 
 ```sh
-CGO_ENABLED=0 go build -ldflags="-w -s" -o katashiro ./cmd/katashiro
-# または
-go install ./cmd/katashiro
+go install github.com/withnic/katashiro/cmd/katashiro@latest
+```
+
+**ソースからビルド**:
+
+```sh
+git clone https://github.com/withnic/katashiro.git
+cd katashiro
+CGO_ENABLED=0 go build -ldflags="-w -s" -o katashiro ./cmd/katashiro   # make build でも可
 ```
 
 ```sh
