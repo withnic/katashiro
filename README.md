@@ -219,6 +219,90 @@ katashiro master info                     # 件数・出典・フィンガープ
 - **kyc**（`--with-kyc`）: 運転免許証番号（公安委員会コード + 取得年 + 交付番号 + 検査数字 + 再発行回数）、パスポート番号
 - **profile**（`--with-profile`）: 職業（申込フォーム型の 11 区分）・業種（日本標準産業分類の大分類 20 区分）・勤務先・年収（万円、年齢と連動）・婚姻（配偶者の有無）・扶養人数（扶養している家族の人数の目安）
 
+### 出力例
+
+埋め込み辞書・既定の `--seed=1` / `--base-date=2026-01-01` で実行した結果です（同じ条件なら誰が実行しても同じ出力になります）。
+
+**JSON**（全モジュール付き）: `katashiro export 1 --with-finance --with-kyc --with-profile`
+
+```json
+[
+  {
+    "id": 581155,
+    "personal": {
+      "birthday": "1978-03-15",
+      "age": 47,
+      "gender": "male",
+      "last_name": "田辺",
+      "first_name": "聡",
+      "full_name": "田辺　聡",
+      "last_name_hiragana": "たなべ",
+      "first_name_hiragana": "さとし",
+      "full_name_hiragana": "たなべ　さとし",
+      "last_name_katakana": "タナベ",
+      "first_name_katakana": "サトシ",
+      "full_name_katakana": "タナベ　サトシ",
+      "bank_holder_kana": "ﾀﾅﾍﾞ ｻﾄｼ",
+      "romaji_name": "satoshi.tanabe"
+    },
+    "contact": {
+      "zip_code": "020-0034",
+      "prefecture": "岩手県",
+      "city": "盛岡市",
+      "town": "盛岡駅前通",
+      "street_address": "1-16-16",
+      "building": "",
+      "phone_number": "090-0259-4565",
+      "email": "satoshi.tanabe.581154@example.com"
+    },
+    "finance": {
+      "credit_card": {
+        "brand": "Visa",
+        "number": "4000005085811546",
+        "expiration_date": "08/27",
+        "cvv": "645",
+        "card_holder": "SATOSHI TANABE"
+      },
+      "bank_account": {
+        "bank_code": "9900",
+        "bank_name": "ゆうちょ銀行",
+        "branch_code": "859",
+        "branch_name": "キキョウ支店",
+        "account_type": "1",
+        "account_number": "1581154",
+        "account_holder_kana": "ﾀﾅﾍﾞ ｻﾄｼ"
+      },
+      "my_number": "000005811546"
+    },
+    "kyc": {
+      "drivers_license_number": "211658115400",
+      "passport_number": "TC1581154",
+      "document_type": "drivers_license"
+    },
+    "profile": {
+      "occupation": "自営業",
+      "industry": "運輸業、郵便業",
+      "company_name": "有限会社サンプルロジスティクス",
+      "annual_income_man_yen": 920,
+      "is_married": false,
+      "dependents_count": 0
+    }
+  }
+]
+```
+
+上は見やすく整形しています。実際の `--format=json` は配列の中に 1 件 1 行で並び、`--format=jsonl` は 1 行 1 件の JSON Lines です。
+`id` は 1 始まりの通し番号（seqID + 1）で、メールなどに埋め込まれる番号は seqID（0 始まり）です。
+
+**CSV**（モジュールなし）: `katashiro export 3 --format=csv`
+
+```csv
+id,personal_birthday,personal_age,personal_gender,personal_last_name,personal_first_name,personal_full_name,personal_last_name_hiragana,personal_first_name_hiragana,personal_full_name_hiragana,personal_last_name_katakana,personal_first_name_katakana,personal_full_name_katakana,personal_bank_holder_kana,personal_romaji_name,contact_zip_code,contact_prefecture,contact_city,contact_town,contact_street_address,contact_building,contact_phone_number,contact_email
+581155,1978-03-15,47,male,田辺,聡,田辺　聡,たなべ,さとし,たなべ　さとし,タナベ,サトシ,タナベ　サトシ,ﾀﾅﾍﾞ ｻﾄｼ,satoshi.tanabe,020-0034,岩手県,盛岡市,盛岡駅前通,1-16-16,,090-0259-4565,satoshi.tanabe.581154@example.com
+663138,1977-04-04,48,male,東,博之,東　博之,ひがし,ひろゆき,ひがし　ひろゆき,ヒガシ,ヒロユキ,ヒガシ　ヒロユキ,ﾋｶﾞｼ ﾋﾛﾕｷ,hiroyuki.higashi,167-0051,東京都,杉並区,荻窪,2-10-12,,070-0981-3484,hiroyuki.higashi.663137@example.jp
+380126,1994-01-17,31,male,西村,勝,西村　勝,にしむら,まさる,にしむら　まさる,ニシムラ,マサル,ニシムラ　マサル,ﾆｼﾑﾗ ﾏｻﾙ,masaru.nishimura,862-0950,熊本県,熊本市中央区,水前寺,6-2-7,,080-0129-5368,masaru.nishimura.380125@example.jp
+```
+
 CSV / SQLite の列は仕様書のフラット列名の順に並び、指定したモジュールの列だけが出力されます。
 SQLite では `profile_is_married` を `INTEGER (1/0)`、18 歳未満の運転免許証番号を `NULL` として保存します。
 
