@@ -32,5 +32,28 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# 前回のタグからの変更をコミットの件名で分類する（件名の書き方: Add … / Fix … / Docs: … / Build(deps): …）
 changelog:
   use: github
+  sort: asc
+  format: "{{ .Message }} ({{ slice .SHA 0 7 }})"
+  groups:
+    - title: 新機能
+      regexp: '^(Add|Feat)\b'
+      order: 0
+    - title: 修正
+      regexp: '^Fix\b'
+      order: 1
+    - title: 依存関係の更新
+      regexp: '^Build\(deps\)'
+      order: 2
+    - title: その他
+      order: 999
+  filters:
+    # 利用者に関係しない変更はリリースノートに載せない
+    exclude:
+      - '^Docs:'
+      - '^Test:'
+      - '^CI:'
+      - '^Chore:'
+      - '^Merge '
