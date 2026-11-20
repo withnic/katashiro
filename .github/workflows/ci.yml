@@ -54,3 +54,29 @@ jobs:
         with:
           go-version-file: go.mod
       - run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+
+  docker:
+    # ランナー標準の docker（BuildKit）でビルドする。追加の Action を使わないので SHA 固定の対象も増えない。
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: build image (runs go test inside)
+        run: docker build -t katashiro:ci .
+      - name: smoke test (CLI)
+        run: |
+          docker run --rm katashiro:ci version
+          docker run --rm katashiro:ci export 3 --with-kyc --format=jsonl | tee /dev/stderr | test "$(wc -l)" -eq 3
+      - name: smoke test (HTTP API)
+        run: |
+          docker run -d --name katashiro -p 8080:8080 katashiro:ci
+          for i in $(seq 1 20); do curl -fsS http://localhost:8080/healthz && break; sleep 1; done
+          curl -fsS -X POST "http://localhost:8080/api/v1/personas/next?count=2" | python3 -c 'import json,sys; assert len(json.load(sys.stdin)) == 2'
+          docker rm -f katashiro
+      - name: license files are bundled
+        run: |
+          id=$(docker create katashiro:ci)
+          docker cp "$id:/usr/share/doc/katashiro/LICENSE" ./LICENSE.image
+          docker cp "$id:/usr/share/doc/katashiro/THIRD_PARTY_NOTICES" ./NOTICES.image
+          docker rm "$id"
+          grep -q "MIT License" LICENSE.image
+          grep -q "modernc.org/sqlite" NOTICES.image
