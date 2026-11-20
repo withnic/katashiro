@@ -198,8 +198,8 @@ func TestWriteDirReplacesOnlyDictionaryFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	// 共有用ディレクトリに置かれた他のファイルは残る
-	os.WriteFile(filepath.Join(dir, "README.md"), []byte("team notes"), 0o644)
-	os.WriteFile(filepath.Join(dir, master.AddressesBinName), []byte("old"), 0o644)
+	writeFile(t, filepath.Join(dir, "README.md"), "team notes")
+	writeFile(t, filepath.Join(dir, master.AddressesBinName), "old")
 	if err := r.WriteDir(dir, time.Unix(0, 0)); err != nil {
 		t.Fatal(err)
 	}
@@ -214,11 +214,18 @@ func TestWriteDirReplacesOnlyDictionaryFiles(t *testing.T) {
 
 	// 書き出しに失敗しても一時ディレクトリは残らず、既存の辞書もそのまま
 	blocked := filepath.Join(parent, "blocked")
-	os.WriteFile(blocked, []byte("not a dir"), 0o644)
+	writeFile(t, blocked, "not a dir")
 	if err := r.WriteDir(blocked, time.Unix(0, 0)); err == nil {
 		t.Fatal("writing into a regular file path must fail")
 	}
 	assertNoStaging(t, parent)
+}
+
+func writeFile(t *testing.T, path, content string) {
+	t.Helper()
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func assertNoStaging(t *testing.T, parent string) {

@@ -176,7 +176,7 @@ func AddressIssues(a Address) []string {
 func NameIssues(n Name) []string {
 	var out []string
 	for _, r := range n.Hiragana {
-		if !(r >= 'ぁ' && r <= 'ゖ') && r != 'ー' {
+		if (r < 'ぁ' || r > 'ゖ') && r != 'ー' {
 			out = append(out, "読みにひらがな以外の文字")
 			break
 		}

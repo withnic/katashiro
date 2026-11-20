@@ -49,10 +49,10 @@ func ToHepburn(reading string) string {
 				continue
 			}
 		}
-		switch r := rs[i]; {
-		case r == 'っ':
+		switch r := rs[i]; r {
+		case 'っ':
 			syl = append(syl, "っ")
-		case r == 'ー':
+		case 'ー':
 			// 長音は省略
 		default:
 			if s, ok := hepburnMono[r]; ok {

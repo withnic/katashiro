@@ -151,11 +151,15 @@ func TestExportSQLite(t *testing.T) {
 	}
 	defer db.Close()
 	var n, cols int
-	db.QueryRow("SELECT COUNT(*), COUNT(DISTINCT kyc_passport_number) FROM personas").Scan(&n, &cols)
+	if err := db.QueryRow("SELECT COUNT(*), COUNT(DISTINCT kyc_passport_number) FROM personas").Scan(&n, &cols); err != nil {
+		t.Fatal(err)
+	}
 	if n != 1000 || cols != 1000 {
 		t.Fatalf("n=%d distinct=%d", n, cols)
 	}
-	db.QueryRow("SELECT COUNT(*) FROM pragma_table_info('personas')").Scan(&cols)
+	if err := db.QueryRow("SELECT COUNT(*) FROM pragma_table_info('personas')").Scan(&cols); err != nil {
+		t.Fatal(err)
+	}
 	if want := len(model.Columns(false, true, false)); cols != want {
 		t.Fatalf("columns=%d want %d (only selected modules)", cols, want)
 	}

@@ -37,10 +37,12 @@ func (j *jsonWriter) Write(p *model.Persona) error {
 	}
 	b := j.buf.Bytes() // 末尾に改行付き
 	if !j.lines {
+		sep := ",\n"
 		if j.n == 0 {
-			j.w.WriteString("[\n")
-		} else {
-			j.w.WriteString(",\n")
+			sep = "[\n"
+		}
+		if _, err := j.w.WriteString(sep); err != nil {
+			return err
 		}
 		b = b[:len(b)-1]
 	}
@@ -51,10 +53,12 @@ func (j *jsonWriter) Write(p *model.Persona) error {
 
 func (j *jsonWriter) Close() error {
 	if !j.lines {
+		end := "\n]\n"
 		if j.n == 0 {
-			j.w.WriteString("[]\n")
-		} else {
-			j.w.WriteString("\n]\n")
+			end = "[]\n"
+		}
+		if _, err := j.w.WriteString(end); err != nil {
+			return err
 		}
 	}
 	return j.w.Flush()

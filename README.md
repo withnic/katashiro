@@ -255,14 +255,23 @@ KATASHIRO_KEN_ALL=./utf_ken_all.zip go test ./internal/masterbuild -run RealData
 ## 開発
 
 ```sh
-go test ./...
+make help    # タスク一覧
+make test    # テスト
+make lint    # golangci-lint（go vet・staticcheck など + gofmt / goimports の確認）
+make fmt     # 整形
+make vuln    # govulncheck
+make ci      # lint + test + vuln（CI と同じ確認）
+make build   # ./katashiro をビルド
 ```
+
+golangci-lint と govulncheck のバージョンは `Makefile` で固定しています（CI も `make` 経由で同じバージョンを使います）。
+初回の `make lint` / `make vuln` で `bin/` にインストールされます。
 
 ### CI / リリース
 
 | ワークフロー | 内容 |
 | :-- | :-- |
-| `.github/workflows/ci.yml` | gofmt / go vet / `go test -race`、CGO 無効の 6 ターゲットクロスビルド、govulncheck |
+| `.github/workflows/ci.yml` | `make lint`（golangci-lint）・`go test -race`、CGO 無効の 6 ターゲットクロスビルド、`make vuln`（govulncheck）、Docker イメージのビルドと動作確認 |
 | `.github/workflows/codeql.yml` | CodeQL 静的解析（public リポジトリは無料） |
 | `.github/workflows/release.yml` | `v*` タグの push で GoReleaser がバイナリとチェックサムを GitHub Releases に公開 |
 | `.github/workflows/master-check.yml` | 週次で最新の `utf_ken_all.zip` を取得し、クレンジング漏れを検査（結果はジョブのサマリーに表示） |

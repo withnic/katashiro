@@ -294,7 +294,7 @@ func TestOverridePrefectureFukuoka(t *testing.T) {
 			t.Fatalf("prefecture=%s", p.Contact.Prefecture)
 		}
 		zip := p.Contact.ZipCode
-		if !(strings.HasPrefix(zip, "80") || strings.HasPrefix(zip, "81") || strings.HasPrefix(zip, "82") || strings.HasPrefix(zip, "83")) {
+		if !slices.ContainsFunc([]string{"80", "81", "82", "83"}, func(p string) bool { return strings.HasPrefix(zip, p) }) {
 			t.Fatalf("zip %s is not a Fukuoka zip", zip)
 		}
 		lic := *p.KYC.DriversLicenseNumber

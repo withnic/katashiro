@@ -43,7 +43,7 @@ func (s *Server) Handler() http.Handler {
 func writeJSON(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(v)
+	_ = json.NewEncoder(w).Encode(v) // ヘッダ送信後はクライアント切断以外で失敗しない
 }
 
 func writeError(w http.ResponseWriter, code int, err error) {

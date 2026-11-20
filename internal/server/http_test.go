@@ -13,7 +13,8 @@ import (
 	"github.com/withnic/katashiro/internal/state"
 )
 
-func post(t *testing.T, url string) (*http.Response, []model.Persona) {
+// post は url に POST し、ステータスコードと（/next が 200 のとき）払い出された Persona を返す。
+func post(t *testing.T, url string) (int, []model.Persona) {
 	t.Helper()
 	resp, err := http.Post(url, "", nil)
 	if err != nil {
@@ -26,7 +27,7 @@ func post(t *testing.T, url string) (*http.Response, []model.Persona) {
 			t.Fatal(err)
 		}
 	}
-	return resp, ps
+	return resp.StatusCode, ps
 }
 
 func TestNextResetAndConflict(t *testing.T) {
@@ -37,16 +38,16 @@ func TestNextResetAndConflict(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ts := httptest.NewServer(New(model.DefaultOptions(), alloc).Handler())
 			defer ts.Close()
-			resp, ps := post(t, ts.URL+"/api/v1/personas/next?count=10&profile=e2e&with_kyc=true&with_profile=true")
-			if resp.StatusCode != 200 || len(ps) != 10 || ps[0].KYC == nil || ps[0].Profile == nil || ps[0].Finance != nil {
-				t.Fatalf("status=%d len=%d", resp.StatusCode, len(ps))
+			code, ps := post(t, ts.URL+"/api/v1/personas/next?count=10&profile=e2e&with_kyc=true&with_profile=true")
+			if code != http.StatusOK || len(ps) != 10 || ps[0].KYC == nil || ps[0].Profile == nil || ps[0].Finance != nil {
+				t.Fatalf("status=%d len=%d", code, len(ps))
 			}
 			_, ps2 := post(t, ts.URL+"/api/v1/personas/next?count=1&profile=e2e")
 			if ps2[0].ID == ps[0].ID {
 				t.Fatal("cursor must advance")
 			}
-			if resp, _ := post(t, ts.URL+"/api/v1/personas/reset?profile=e2e"); resp.StatusCode != 200 {
-				t.Fatalf("reset status=%d", resp.StatusCode)
+			if code, _ := post(t, ts.URL+"/api/v1/personas/reset?profile=e2e"); code != http.StatusOK {
+				t.Fatalf("reset status=%d", code)
 			}
 			_, ps3 := post(t, ts.URL+"/api/v1/personas/next?profile=e2e")
 			if ps3[0].ID != ps[0].ID {
@@ -56,19 +57,24 @@ func TestNextResetAndConflict(t *testing.T) {
 			if _, err := alloc.Reserve("full", 1_000_000, false); err != nil {
 				t.Fatal(err)
 			}
-			if resp, _ := post(t, ts.URL+"/api/v1/personas/next?profile=full"); resp.StatusCode != http.StatusConflict {
-				t.Fatalf("want 409, got %d", resp.StatusCode)
+			if code, _ := post(t, ts.URL+"/api/v1/personas/next?profile=full"); code != http.StatusConflict {
+				t.Fatalf("want 409, got %d", code)
 			}
-			if resp, ps := post(t, ts.URL+"/api/v1/personas/next?profile=full&loop=true"); resp.StatusCode != 200 || ps[0].ID != ps3[0].ID {
-				t.Fatalf("loop: status=%d", resp.StatusCode)
+			if code, ps := post(t, ts.URL+"/api/v1/personas/next?profile=full&loop=true"); code != http.StatusOK || ps[0].ID != ps3[0].ID {
+				t.Fatalf("loop: status=%d", code)
 			}
 			for _, bad := range []string{"count=0", "count=abc", "with_kyc=maybe", "profile=../x", "set=unknown=1"} {
-				if resp, _ := post(t, ts.URL+"/api/v1/personas/next?"+bad); resp.StatusCode != 400 {
-					t.Errorf("%s: want 400, got %d", bad, resp.StatusCode)
+				if code, _ := post(t, ts.URL+"/api/v1/personas/next?"+bad); code != http.StatusBadRequest {
+					t.Errorf("%s: want 400, got %d", bad, code)
 				}
 			}
-			if resp, err := http.Get(ts.URL + "/api/v1/personas/next"); err != nil || resp.StatusCode != http.StatusMethodNotAllowed {
-				t.Fatalf("GET must be 405")
+			resp, err := http.Get(ts.URL + "/api/v1/personas/next")
+			if err != nil {
+				t.Fatal(err)
+			}
+			resp.Body.Close()
+			if resp.StatusCode != http.StatusMethodNotAllowed {
+				t.Fatalf("GET must be 405, got %d", resp.StatusCode)
 			}
 		})
 	}

@@ -28,3 +28,6 @@ internal/master/data/*.json
 
 # tools/notices の生成物（リリース時に作る）
 /THIRD_PARTY_NOTICES
+
+# make が入れる開発ツール
+/bin/
