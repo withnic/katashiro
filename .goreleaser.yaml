@@ -1,0 +1,36 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    # 依存ライブラリのライセンス文（MIT / BSD はバイナリ配布時に同梱が必要）
+    - sh -c 'go run ./tools/notices > THIRD_PARTY_NOTICES'
+
+builds:
+  - id: katashiro
+    main: ./cmd/katashiro
+    binary: katashiro
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README.md
+      - LICENSE
+      - THIRD_PARTY_NOTICES
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  use: github

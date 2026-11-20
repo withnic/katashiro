@@ -1,0 +1,5 @@
+.ai-workspace
+.git
+katashiro
+*.sqlite
+*.db

@@ -1,0 +1,33 @@
+name: Master data check
+
+# 日本郵便の最新 utf_ken_all.zip を取得し、クレンジング漏れがないか検査する（毎月更新されるため週次で確認）。
+on:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ken-all:
+    # フォーク先では実行しない（日本郵便・gimei への定期アクセスを元リポジトリだけにする）
+    if: github.repository == 'withnic/katashiro'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: download utf_ken_all.zip
+        run: curl -fsSL -o "$RUNNER_TEMP/utf_ken_all.zip" https://www.post.japanpost.jp/service/search/zipcode/download/utf/zip/utf_ken_all.zip
+      - name: cleansing tests on real data
+        env:
+          KATASHIRO_KEN_ALL: ${{ runner.temp }}/utf_ken_all.zip
+        run: go test ./internal/masterbuild -run RealData -v
+      - name: cleansing report
+        run: go run -tags katashiro_genmaster ./cmd/genmaster -ken-all "$RUNNER_TEMP/utf_ken_all.zip" -check >> "$GITHUB_STEP_SUMMARY"
+      - name: master fetch works with the default URLs (Japan Post + gimei)
+        run: |
+          go run ./cmd/katashiro master fetch --out="$RUNNER_TEMP/master"
+          KATASHIRO_MASTER_DIR="$RUNNER_TEMP/master" go run ./cmd/katashiro export 1000 --with-kyc --with-profile > /dev/null

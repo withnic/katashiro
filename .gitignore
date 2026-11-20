@@ -1,0 +1,30 @@
+# AI 作業ファイル
+.ai-workspace/
+
+# ビルド成果物
+/katashiro
+/katashiro.exe
+/dist/
+
+# export の出力
+*.sqlite
+*.sqlite3
+*.db
+*.jsonl
+*.csv
+
+# genmaster の取得元ソース（生ファイルはコミットしない）
+utf_ken_all.zip
+KEN_ALL*.CSV
+utf_ken_all.csv
+names.yml
+/custom_master/
+
+# genmaster -json の確認用出力（埋め込み用 *.bin はコミット対象）
+internal/master/data/*.json
+
+# katashiro master fetch の既定出力先（実データ辞書はコミットしない）
+/master/
+
+# tools/notices の生成物（リリース時に作る）
+/THIRD_PARTY_NOTICES
