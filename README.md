@@ -1,3 +1,5 @@
+![katashiro（形代）](./assets/katashiro.jpg)
+
 # katashiro（形代）
 
 日本の Web サービス・業務システム（決済・KYC・会員管理・バッチ処理）のテスト向けに、
